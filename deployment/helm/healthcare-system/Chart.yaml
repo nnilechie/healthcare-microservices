@@ -1,0 +1,6 @@
+apiVersion: v2
+name: healthcare-system
+description: A Helm chart for Healthcare Microservices System
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

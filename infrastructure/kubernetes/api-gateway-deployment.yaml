@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: healthcare-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+      - name: api-gateway
+        image: healthcare/api-gateway:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PATIENT_SERVICE_URL
+          value: "http://patient-service:8081"
+        - name: APPOINTMENT_SERVICE_URL
+          value: "http://appointment-service:8082"
+        - name: MEDICAL_RECORDS_SERVICE_URL
+          value: "http://medical-records-service:8083"
+        - name: BILLING_SERVICE_URL
+          value: "http://billing-service:8084"
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: healthcare-config
+              key: REDIS_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

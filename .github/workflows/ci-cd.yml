@@ -1,0 +1,93 @@
+name: Healthcare System CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: healthcare-system
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+    
+    - name: Run tests
+      run: |
+        cd services/patient-service
+        mvn test
+        cd ../appointment-service
+        mvn test
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build and push Docker images
+      run: |
+        services=("patient-service" "appointment-service" "medical-records-service" "billing-service" "api-gateway")
+        for service in "${services[@]}"; do
+          docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/$service:${{ github.sha }} ./services/$service
+          docker push ${{ env.REGISTRY }}/${{ github.repository }}/$service:${{ github.sha }}
+        done
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v1
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBECONFIG }}
+    
+    - name: Deploy to Kubernetes
+      run: |
+        helm upgrade --install healthcare-system ./deployment/helm/healthcare-system \
+          --namespace healthcare-system \
+          --create-namespace \
+          --set global.registry=${{ env.REGISTRY }} \
+          --set services.patientService.image.tag=${{ github.sha }} \
+          --set services.appointmentService.image.tag=${{ github.sha }}

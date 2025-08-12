@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: healthcare-services-monitor
+  namespace: healthcare-system
+spec:
+  selector:
+    matchLabels:
+      monitoring: "true"
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /actuator/prometheus
+    

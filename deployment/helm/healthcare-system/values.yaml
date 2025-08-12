@@ -1,0 +1,76 @@
+global:
+  registry: "your-registry.com"
+  pullPolicy: Always
+  namespace: healthcare-system
+
+services:
+  patientService:
+    image:
+      repository: healthcare/patient-service
+      tag: "latest"
+    replicas: 3
+    port: 8081
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  appointmentService:
+    image:
+      repository: healthcare/appointment-service
+      tag: "latest"
+    replicas: 2
+    port: 8082
+
+  apiGateway:
+    image:
+      repository: healthcare/api-gateway
+      tag: "latest"
+    replicas: 2
+    port: 8080
+    service:
+      type: LoadBalancer
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hostname: "healthcare-api.yourdomain.com"
+  tls:
+    enabled: true
+    secretName: "healthcare-tls"
+
+database:
+  postgres:
+    enabled: true
+    storageSize: "10Gi"
+    storageClass: "standard"
+  
+  mongodb:
+    enabled: true
+    storageSize: "20Gi"
+
+redis:
+  enabled: true
+  storageSize: "5Gi"
+
+kafka:
+  enabled: true
+  replicas: 3
+  storageSize: "10Gi"
+
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80

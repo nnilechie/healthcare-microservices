@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: patient-service
+  namespace: healthcare-system
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: patient-service
+  template:
+    metadata:
+      labels:
+        app: patient-service
+    spec:
+      containers:
+      - name: patient-service
+        image: healthcare/patient-service:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: DB_HOST
+          value: "postgres-patient-service"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "patient_db"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: patient-db-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: patient-db-secret
+              key: password
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              name: healthcare-config
+              key: KAFKA_BOOTSTRAP_SERVERS
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/ready
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
