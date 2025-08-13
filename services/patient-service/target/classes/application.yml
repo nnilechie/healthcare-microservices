@@ -1,27 +1,18 @@
 server:
   port: 8081
-
 spring:
   application:
     name: patient-service
-  
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:patient_db}
-    username: ${DB_USER:patient_user}
-    password: ${DB_PASSWORD:patient_pass}
-    driver-class-name: org.postgresql.Driver
-  
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: false
-  
+  data:
+    mongodb:
+      host: ${SPRING_DATA_MONGODB_HOST:mongodb}
+      port: ${SPRING_DATA_MONGODB_PORT:27017}
+      database: ${SPRING_DATA_MONGODB_DATABASE:patient_db}
+      authentication-database: admin
+      username: ${MONGODB_USERNAME:admin}
+      password: ${MONGODB_PASSWORD:password}
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -29,25 +20,10 @@ spring:
       group-id: patient-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-  
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      timeout: 2000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-wait: -1ms
-          max-idle: 8
-          min-idle: 0
-  
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${OAUTH_ISSUER_URI:http://localhost:8080/auth/realms/healthcare}
-
+logging:
+  level:
+    com: INFO
+    org.springframework: WARN
 management:
   endpoints:
     web:
@@ -56,11 +32,3 @@ management:
   endpoint:
     health:
       show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-
-logging:
-  level:
-    com

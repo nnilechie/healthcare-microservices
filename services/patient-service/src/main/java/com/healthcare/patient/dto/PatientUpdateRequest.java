@@ -1,17 +1,20 @@
 package com.healthcare.patient.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
 
 public class PatientUpdateRequest {
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastName;
     @Email
     private String email;
-    @Pattern(regexp = "\\d{10}")
+    @NotBlank
     private String phoneNumber;
     private AddressDto address;
     private EmergencyContactDto emergencyContact;
+    private String medicalHistory;
     private String status;
 
     // Getters and Setters
@@ -27,6 +30,8 @@ public class PatientUpdateRequest {
     public void setAddress(AddressDto address) { this.address = address; }
     public EmergencyContactDto getEmergencyContact() { return emergencyContact; }
     public void setEmergencyContact(EmergencyContactDto emergencyContact) { this.emergencyContact = emergencyContact; }
+    public String getMedicalHistory() { return medicalHistory; }
+    public void setMedicalHistory(String medicalHistory) { this.medicalHistory = medicalHistory; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

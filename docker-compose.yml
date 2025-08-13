@@ -51,12 +51,18 @@ services:
       - "5434:5432"
 
   mongodb:
-    image: mongo:7
+    image: mongo:7.0
+    container_name: healthcare-microservices-mongodb-1
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=patient_db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - healthcare-network
 
   # API Gateway
   api-gateway:
@@ -75,14 +81,17 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_HOST=postgres-patient
-      - DB_PORT=5432
-      - DB_NAME=patient_db
-      - DB_USER=patient_user
-      - DB_PASSWORD=patient_pass
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_DATABASE=patient_db
+      - SPRING_DATA_MONGODB_USERNAME=admin
+      - SPRING_DATA_MONGODB_PASSWORD=password
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SERVER_PORT=8081
     depends_on:
-      - postgres-patient
-
+      - mongodb
+      - kafka
+      
   appointment-service:
     build: ./services/appointment-service
     ports:
@@ -93,5 +102,12 @@ services:
       - DB_NAME=appointment_db
       - DB_USER=appointment_user
       - DB_PASSWORD=appointment_pass
+      - SERVER_PORT=8082
     depends_on:
       - postgres-appointment
+      - kafka
+networks:
+  healthcare-network:
+    driver: bridge
+volumes:
+  mongodb_data:

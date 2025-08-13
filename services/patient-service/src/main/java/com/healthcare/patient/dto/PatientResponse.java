@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PatientResponse {
-    private Long id;
+    private String id;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;
@@ -13,14 +13,14 @@ public class PatientResponse {
     private String phoneNumber;
     private AddressDto address;
     private EmergencyContactDto emergencyContact;
-    private String medicalRecordNumber;
+    private String medicalHistory;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public String getLastName() { return lastName; }
@@ -37,8 +37,8 @@ public class PatientResponse {
     public void setAddress(AddressDto address) { this.address = address; }
     public EmergencyContactDto getEmergencyContact() { return emergencyContact; }
     public void setEmergencyContact(EmergencyContactDto emergencyContact) { this.emergencyContact = emergencyContact; }
-    public String getMedicalRecordNumber() { return medicalRecordNumber; }
-    public void setMedicalRecordNumber(String medicalRecordNumber) { this.medicalRecordNumber = medicalRecordNumber; }
+    public String getMedicalHistory() { return medicalHistory; }
+    public void setMedicalHistory(String medicalHistory) { this.medicalHistory = medicalHistory; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

@@ -3,3 +3,4 @@ WORKDIR /app
 COPY target/appointment-service-1.0.0.jar app.jar
 EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]
+ENV SERVER_PORT=8082

@@ -1,23 +1,10 @@
 package com.healthcare.patient.entity;
 
-import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.NotBlank;
-
-@Embeddable
 public class Address {
-    @NotBlank
     private String street;
-
-    @NotBlank
     private String city;
-
-    @NotBlank
     private String state;
-
-    @NotBlank
     private String postalCode;
-
-    @NotBlank
     private String country;
 
     // Getters and Setters

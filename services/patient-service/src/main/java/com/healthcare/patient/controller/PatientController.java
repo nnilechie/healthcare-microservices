@@ -32,8 +32,10 @@ public class PatientController {
     @GetMapping("/{id}")
     @Operation(summary = "Get patient by ID")
     @PreAuthorize("hasAuthority('READ_PATIENT')")
-    public ResponseEntity<PatientResponse> getPatient(@PathVariable Long id) {
-        return ResponseEntity.ok(patientService.getPatient(id));
+    public ResponseEntity<PatientResponse> getPatient(@PathVariable String id) {
+        return patientService.getPatientById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping
@@ -46,14 +48,14 @@ public class PatientController {
     @PutMapping("/{id}")
     @Operation(summary = "Update patient")
     @PreAuthorize("hasAuthority('WRITE_PATIENT')")
-    public ResponseEntity<PatientResponse> updatePatient(@PathVariable Long id, @Valid @RequestBody PatientUpdateRequest request) {
+    public ResponseEntity<PatientResponse> updatePatient(@PathVariable String id, @Valid @RequestBody PatientUpdateRequest request) {
         return ResponseEntity.ok(patientService.updatePatient(id, request));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete patient")
     @PreAuthorize("hasAuthority('DELETE_PATIENT')")
-    public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePatient(@PathVariable String id) {
         patientService.deletePatient(id);
         return ResponseEntity.noContent().build();
     }

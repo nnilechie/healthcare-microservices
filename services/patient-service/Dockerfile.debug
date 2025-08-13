@@ -1,0 +1,5 @@
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY target/patient-service-1.0.0.jar app.jar
+COPY src/main/resources/application.yml resources/application.yml
+CMD ["cat", "/app/resources/application.yml"]

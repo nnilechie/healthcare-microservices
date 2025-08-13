@@ -1,69 +1,44 @@
 package com.healthcare.patient.entity;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "patients")
+@Document(collection = "patients")
 public class Patient {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @NotBlank
-    @Column(name = "first_name")
+    private String id; // Use String for MongoDB ObjectId
+    @Field("first_name")
     private String firstName;
-
-    @NotBlank
-    @Column(name = "last_name")
+    @Field("last_name")
     private String lastName;
-
-    @Past
-    @Column(name = "date_of_birth")
+    @Field("date_of_birth")
     private LocalDate dateOfBirth;
-
-    @NotBlank
-    @Enumerated(EnumType.STRING)
-    private String gender;
-
-    @Email
-    @Column(name = "email")
+    @Field("gender")
+    private String gender; // Use String or enum, no @Enumerated needed
+    @Field("email")
     private String email;
-
-    @Pattern(regexp = "\\d{10}")
-    @Column(name = "phone_number")
+    @Field("phone_number")
     private String phoneNumber;
-
-    @Embedded
+    @Field("address")
     private Address address;
-
-    @Embedded
+    @Field("emergency_contact")
     private EmergencyContact emergencyContact;
-
-    @NotBlank
-    @Column(name = "medical_record_number", unique = true)
-    private String medicalRecordNumber;
-
-    @NotBlank
-    @Enumerated(EnumType.STRING)
-    private String status;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Field("medical_history")
+    private String medicalHistory;
+    @Field("status")
+    private String status; // Use String or enum
+    @Field("created_at")
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @Field("updated_at")
     private LocalDateTime updatedAt;
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public String getLastName() { return lastName; }
@@ -80,8 +55,8 @@ public class Patient {
     public void setAddress(Address address) { this.address = address; }
     public EmergencyContact getEmergencyContact() { return emergencyContact; }
     public void setEmergencyContact(EmergencyContact emergencyContact) { this.emergencyContact = emergencyContact; }
-    public String getMedicalRecordNumber() { return medicalRecordNumber; }
-    public void setMedicalRecordNumber(String medicalRecordNumber) { this.medicalRecordNumber = medicalRecordNumber; }
+    public String getMedicalHistory() { return medicalHistory; }
+    public void setMedicalHistory(String medicalHistory) { this.medicalHistory = medicalHistory; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }

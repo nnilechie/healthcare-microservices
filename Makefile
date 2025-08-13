@@ -7,9 +7,9 @@ help: ## Display this help message
 
 setup: ## Setup the project (run this first)
 	@echo "Setting up Healthcare Microservices System..."
-	chmod +x scripts/*.sh
-	chmod +x quick-fix-setup.sh
-	./quick-fix-setup.sh
+	@chmod +x scripts/*.sh
+# 	chmod +x quick-fix-setup.sh
+# 	./quick-fix-setup.sh
 
 build: ## Build all Docker images
 	@echo "Building Docker images..."
