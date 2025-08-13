@@ -20,6 +20,8 @@ spring:
       group-id: patient-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+  security:
+    enabled: false
 logging:
   level:
     com: INFO
