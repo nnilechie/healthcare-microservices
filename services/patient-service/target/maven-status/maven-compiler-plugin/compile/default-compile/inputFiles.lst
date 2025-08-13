@@ -1,0 +1,14 @@
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/entity/Patient.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/dto/PatientUpdateRequest.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/dto/AddressDto.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/dto/EmergencyContactDto.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/Application.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/service/PatientService.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/dto/PatientResponse.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/entity/EmergencyContact.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/entity/Address.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/exception/ResourceNotFoundException.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/dto/PatientCreateRequest.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/PatientServiceApplication.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/repository/PatientRepository.java
+/Users/nicholasilechie/Desktop/Seneca2025/SOA/healthcare-microservices/services/patient-service/src/main/java/com/healthcare/patient/controller/PatientController.java

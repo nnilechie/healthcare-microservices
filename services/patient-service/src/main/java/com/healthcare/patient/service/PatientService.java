@@ -1,97 +1,157 @@
 package com.healthcare.patient.service;
 
-import com.healthcare.patient.dto.PatientCreateRequest;
-import com.healthcare.patient.dto.PatientResponse;
-import com.healthcare.patient.dto.PatientUpdateRequest;
-import com.healthcare.patient.entity.Patient;
-import com.healthcare.patient.exception.PatientNotFoundException;
+import com.healthcare.patient.dto.*;
+import com.healthcare.patient.entity.*;
+import com.healthcare.patient.exception.ResourceNotFoundException;
 import com.healthcare.patient.repository.PatientRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
+import org.springframework.kafka.core.KafkaTemplate;
 
 @Service
-@Transactional
 public class PatientService {
+    private final PatientRepository patientRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Autowired
-    private PatientRepository patientRepository;
-
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-
-    @Autowired
-    private PatientMapper patientMapper;
-
-    public PatientResponse createPatient(PatientCreateRequest request) {
-        Patient patient = patientMapper.toEntity(request);
-        patient.setMedicalRecordNumber(generateMedicalRecordNumber());
-        
-        Patient savedPatient = patientRepository.save(patient);
-        
-        // Publish event
-        kafkaTemplate.send("patient-created", savedPatient.getId(), savedPatient);
-        
-        return patientMapper.toResponse(savedPatient);
+    public PatientService(PatientRepository patientRepository, KafkaTemplate<String, Object> kafkaTemplate) {
+        this.patientRepository = patientRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
-    @Cacheable(value = "patients", key = "#id")
+    @Transactional
+    public PatientResponse createPatient(PatientCreateRequest request) {
+        Patient patient = toEntity(request);
+        patient = patientRepository.save(patient);
+        kafkaTemplate.send("patient.created", patient);
+        return toResponse(patient);
+    }
+
     @Transactional(readOnly = true)
     public PatientResponse getPatient(Long id) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new PatientNotFoundException("Patient not found with id: " + id));
-        return patientMapper.toResponse(patient);
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+        return toResponse(patient);
     }
 
     @Transactional(readOnly = true)
     public Page<PatientResponse> getAllPatients(Pageable pageable) {
-        Page<Patient> patients = patientRepository.findAll(pageable);
-        return patients.map(patientMapper::toResponse);
+        return patientRepository.findAll(pageable).map(this::toResponse);
     }
 
-    @CacheEvict(value = "patients", key = "#id")
+    @Transactional
     public PatientResponse updatePatient(Long id, PatientUpdateRequest request) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new PatientNotFoundException("Patient not found with id: " + id));
-        
-        patientMapper.updateEntity(patient, request);
-        Patient updatedPatient = patientRepository.save(patient);
-        
-        // Publish event
-        kafkaTemplate.send("patient-updated", updatedPatient.getId(), updatedPatient);
-        
-        return patientMapper.toResponse(updatedPatient);
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + id));
+        updateEntity(patient, request);
+        patient = patientRepository.save(patient);
+        kafkaTemplate.send("patient.updated", patient);
+        return toResponse(patient);
     }
 
-    @CacheEvict(value = "patients", key = "#id")
+    @Transactional
     public void deletePatient(Long id) {
-        Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new PatientNotFoundException("Patient not found with id: " + id));
-        
-        patient.setStatus(Patient.PatientStatus.INACTIVE);
-        patientRepository.save(patient);
-        
-        // Publish event
-        kafkaTemplate.send("patient-deleted", id, id);
+        if (!patientRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Patient not found with id: " + id);
+        }
+        patientRepository.deleteById(id);
+        kafkaTemplate.send("patient.deleted", id);
     }
 
     @Transactional(readOnly = true)
-    public Page<PatientResponse> searchPatients(String firstName, String lastName, 
-                                              String email, String medicalRecordNumber, 
-                                              Pageable pageable) {
-        Page<Patient> patients = patientRepository.findBySearchCriteria(
-            firstName, lastName, email, medicalRecordNumber, pageable);
-        return patients.map(patientMapper::toResponse);
+    public Page<PatientResponse> searchPatients(String query, Pageable pageable) {
+        return patientRepository.findAll(pageable).map(this::toResponse);
     }
 
-    private String generateMedicalRecordNumber() {
-        return "MRN" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
+    private Patient toEntity(PatientCreateRequest request) {
+        Patient patient = new Patient();
+        patient.setFirstName(request.getFirstName());
+        patient.setLastName(request.getLastName());
+        patient.setDateOfBirth(request.getDateOfBirth());
+        patient.setGender(request.getGender());
+        patient.setEmail(request.getEmail());
+        patient.setPhoneNumber(request.getPhoneNumber());
+        patient.setMedicalRecordNumber(request.getMedicalRecordNumber());
+        patient.setStatus(request.getStatus());
+        Address address = new Address();
+        AddressDto addressDto = request.getAddress();
+        if (addressDto != null) {
+            address.setStreet(addressDto.getStreet());
+            address.setCity(addressDto.getCity());
+            address.setState(addressDto.getState());
+            address.setPostalCode(addressDto.getPostalCode());
+            address.setCountry(addressDto.getCountry());
+        }
+        patient.setAddress(address);
+        EmergencyContact emergencyContact = new EmergencyContact();
+        EmergencyContactDto emergencyContactDto = request.getEmergencyContact();
+        if (emergencyContactDto != null) {
+            emergencyContact.setName(emergencyContactDto.getName());
+            emergencyContact.setRelationship(emergencyContactDto.getRelationship());
+            emergencyContact.setPhoneNumber(emergencyContactDto.getPhoneNumber());
+        }
+        patient.setEmergencyContact(emergencyContact);
+        return patient;
+    }
+
+    private PatientResponse toResponse(Patient patient) {
+        PatientResponse response = new PatientResponse();
+        response.setId(patient.getId());
+        response.setFirstName(patient.getFirstName());
+        response.setLastName(patient.getLastName());
+        response.setDateOfBirth(patient.getDateOfBirth());
+        response.setGender(patient.getGender());
+        response.setEmail(patient.getEmail());
+        response.setPhoneNumber(patient.getPhoneNumber());
+        response.setMedicalRecordNumber(patient.getMedicalRecordNumber());
+        response.setStatus(patient.getStatus());
+        response.setCreatedAt(patient.getCreatedAt());
+        response.setUpdatedAt(patient.getUpdatedAt());
+        AddressDto addressDto = new AddressDto();
+        Address address = patient.getAddress();
+        if (address != null) {
+            addressDto.setStreet(address.getStreet());
+            addressDto.setCity(address.getCity());
+            addressDto.setState(address.getState());
+            addressDto.setPostalCode(address.getPostalCode());
+            addressDto.setCountry(address.getCountry());
+        }
+        response.setAddress(addressDto);
+        EmergencyContactDto emergencyContactDto = new EmergencyContactDto();
+        EmergencyContact emergencyContact = patient.getEmergencyContact();
+        if (emergencyContact != null) {
+            emergencyContactDto.setName(emergencyContact.getName());
+            emergencyContactDto.setRelationship(emergencyContact.getRelationship());
+            emergencyContactDto.setPhoneNumber(emergencyContact.getPhoneNumber());
+        }
+        response.setEmergencyContact(emergencyContactDto);
+        return response;
+    }
+
+    private void updateEntity(Patient patient, PatientUpdateRequest request) {
+        if (request.getFirstName() != null) patient.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) patient.setLastName(request.getLastName());
+        if (request.getEmail() != null) patient.setEmail(request.getEmail());
+        if (request.getPhoneNumber() != null) patient.setPhoneNumber(request.getPhoneNumber());
+        if (request.getStatus() != null) patient.setStatus(request.getStatus());
+        AddressDto addressDto = request.getAddress();
+        if (addressDto != null) {
+            Address address = patient.getAddress() != null ? patient.getAddress() : new Address();
+            address.setStreet(addressDto.getStreet());
+            address.setCity(addressDto.getCity());
+            address.setState(addressDto.getState());
+            address.setPostalCode(addressDto.getPostalCode());
+            address.setCountry(addressDto.getCountry());
+            patient.setAddress(address);
+        }
+        EmergencyContactDto emergencyContactDto = request.getEmergencyContact();
+        if (emergencyContactDto != null) {
+            EmergencyContact emergencyContact = patient.getEmergencyContact() != null ? patient.getEmergencyContact() : new EmergencyContact();
+            emergencyContact.setName(emergencyContactDto.getName());
+            emergencyContact.setRelationship(emergencyContactDto.getRelationship());
+            emergencyContact.setPhoneNumber(emergencyContactDto.getPhoneNumber());
+            patient.setEmergencyContact(emergencyContact);
+        }
     }
 }

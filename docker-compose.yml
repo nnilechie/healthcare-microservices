@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   # Infrastructure Services
   zookeeper:
@@ -67,13 +66,10 @@ services:
     environment:
       - PATIENT_SERVICE_URL=http://patient-service:8081
       - APPOINTMENT_SERVICE_URL=http://appointment-service:8082
-      - MEDICAL_RECORDS_SERVICE_URL=http://medical-records-service:8083
-      - BILLING_SERVICE_URL=http://billing-service:8084
-      - REDIS_URL=redis:6379
     depends_on:
       - redis
 
-  # Core Services
+  # Core Services (simplified for quick start)
   patient-service:
     build: ./services/patient-service
     ports:
@@ -84,12 +80,8 @@ services:
       - DB_NAME=patient_db
       - DB_USER=patient_user
       - DB_PASSWORD=patient_pass
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - REDIS_URL=redis:6379
     depends_on:
       - postgres-patient
-      - kafka
-      - redis
 
   appointment-service:
     build: ./services/appointment-service
@@ -101,81 +93,5 @@ services:
       - DB_NAME=appointment_db
       - DB_USER=appointment_user
       - DB_PASSWORD=appointment_pass
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       - postgres-appointment
-      - kafka
-
-  medical-records-service:
-    build: ./services/medical-records-service
-    ports:
-      - "8083:8083"
-    environment:
-      - MONGODB_URI=mongodb://root:password@mongodb:27017/medical_records?authSource=admin
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-    depends_on:
-      - mongodb
-      - kafka
-
-  billing-service:
-    build: ./services/billing-service
-    ports:
-      - "8084:8084"
-    environment:
-      - DB_HOST=postgres-billing
-      - DB_PORT=5432
-      - DB_NAME=billing_db
-      - DB_USER=billing_user
-      - DB_PASSWORD=billing_pass
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-    depends_on:
-      - postgres-billing
-      - kafka
-
-  telemedicine-service:
-    build: ./services/telemedicine-service
-    ports:
-      - "8085:8085"
-    environment:
-      - MONGODB_URI=mongodb://root:password@mongodb:27017/telemedicine?authSource=admin
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-    depends_on:
-      - mongodb
-      - kafka
-
-  inventory-service:
-    build: ./services/inventory-service
-    ports:
-      - "8086:8086"
-    environment:
-      - DB_HOST=postgres-patient
-      - DB_PORT=5432
-      - DB_NAME=patient_db
-      - DB_USER=patient_user
-      - DB_PASSWORD=patient_pass
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-    depends_on:
-      - postgres-patient
-      - kafka
-
-  notification-service:
-    build: ./services/notification-service
-    ports:
-      - "8087:8087"
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - REDIS_URL=redis:6379
-    depends_on:
-      - kafka
-      - redis
-
-  analytics-service:
-    build: ./services/analytics-service
-    ports:
-      - "8088:8088"
-    environment:
-      - MONGODB_URI=mongodb://root:password@mongodb:27017/analytics?authSource=admin
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-    depends_on:
-      - mongodb
-      - kafka
