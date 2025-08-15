@@ -5,7 +5,7 @@ spring:
     name: patient-service
   data:
     mongodb:
-      host: ${SPRING_DATA_MONGODB_HOST:mongodb}
+      host: ${SPRING_DATA_MONGODB_HOST:mongodb}ka
       port: ${SPRING_DATA_MONGODB_PORT:27017}
       database: ${SPRING_DATA_MONGODB_DATABASE:patient_db}
       authentication-database: admin
